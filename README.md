@@ -2,10 +2,11 @@
 
 [<img src=https://stockfishchess.org/images/logo/icon_128x128.png></img>](https://stockfishchess.org)
 
-<h3>Stockfish WebAssembly Version</h3>
+<h3>Stockfish WebAssembly</h3>
 
-<p>Stockfish is a free and powerful UCI chess engine. It analyzes chess positions and calculates optimal moves.</p>
-<p>Here we complile it for WebAssembly and test it through emrun the Emscripten local web server and test tool.</p>
+<p>Stockfish is a free and powerful UCI chess engine</p> 
+<p>It analyzes chess positions and calculates optimal moves</p>
+<p>Here we complile it with Emscripten for WebAssembly</p>
 </div>
 
 
@@ -49,6 +50,8 @@ cd server
 emrun sf.html --no_emrun_detect
 ```
 
+emrun is a Emscripten local web server and test tool.
+
 
 #### Prerequisites
 To compile Stockfish by yourself
@@ -79,7 +82,7 @@ emcc --version
 
 ```sh
 cd src
-make ARCH=wasm build -j`
+make ARCH=wasm build -j
 ```
 
 Build options can be set in /src/emscripten/Makefile
