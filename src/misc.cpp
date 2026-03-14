@@ -158,7 +158,8 @@ std::string engine_version_info() {
 
 std::string engine_info(bool to_uci) {
     return engine_version_info() + (to_uci ? "\nid author " : " by ")
-         + "the Stockfish developers (see AUTHORS file)";
+         + "the Stockfish developers (see AUTHORS file)"
+         + "\nTo WebAssembly by MaLa";
 }
 
 

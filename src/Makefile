@@ -147,7 +147,7 @@ ifeq ($(ARCH), $(filter $(ARCH), \
                  x86-64-bmi2 x86-64-avx2 x86-64-sse41-popcnt x86-64-modern x86-64-ssse3 x86-64-sse3-popcnt \
                  x86-64 x86-32-sse41-popcnt x86-32-sse2 x86-32 ppc-64 ppc-64-altivec ppc-64-vsx ppc-32 e2k \
                  armv7 armv7-neon armv8 armv8-dotprod apple-silicon general-64 general-32 riscv64 \
-                 loongarch64 loongarch64-lsx loongarch64-lasx))
+                 loongarch64 loongarch64-lsx loongarch64-lasx wasm))
    SUPPORTED_ARCH=true
 else
    SUPPORTED_ARCH=false
@@ -426,8 +426,12 @@ ifeq ($(findstring -lsx,$(ARCH)),-lsx)
 endif
 
 endif
+
+ifeq ($(ARCH),wasm)
+	include emscripten/Makefile
 endif
 
+endif
 
 ### ==========================================================================
 ### Section 3. Low-level Configuration
@@ -679,6 +683,7 @@ ifeq ($(optimize),yes)
 		endif
 	endif
 
+	ifneq ($(COMP),emscripten)
 	ifeq ($(KERNEL),Darwin)
 		ifeq ($(comp),$(filter $(comp),clang icx))
 			CXXFLAGS += -mdynamic-no-pic
@@ -697,6 +702,7 @@ ifeq ($(optimize),yes)
 			CXXFLAGS += -fexperimental-new-pass-manager
 		endif
 	endif
+	endif
 endif
 
 ### 3.4 Bits
@@ -714,7 +720,7 @@ else
 endif
 
 ifeq ($(popcnt),yes)
-	ifeq ($(arch),$(filter $(arch),ppc64 ppc64-altivec ppc64-vsx armv7 armv8 arm64))
+	ifeq ($(arch),$(filter $(arch),ppc64 ppc64-altivec ppc64-vsx armv7 armv8 arm64 wasm))
 		CXXFLAGS += -DUSE_POPCNT
 	else
 		CXXFLAGS += -msse3 -mpopcnt -DUSE_POPCNT
@@ -945,6 +951,7 @@ help:
 	echo "loongarch64             > LoongArch 64-bit" && \
 	echo "loongarch64-lsx         > LoongArch 64-bit with SIMD eXtension" && \
 	echo "loongarch64-lasx        > LoongArch 64-bit with Advanced SIMD eXtension" && \
+	echo "wasm                    > webAssembly single/multi thread SIMD 128" && \
 	echo "" && \
 	echo "Supported compilers:" && \
 	echo "" && \
@@ -965,6 +972,7 @@ help:
 	echo "make -j profile-build ARCH=x86-64-avxvnni" && \
 	echo "make -j profile-build ARCH=x86-64-avxvnni COMP=gcc COMPCXX=g++-12.0" && \
 	echo "make -j build ARCH=x86-64-ssse3 COMP=clang" && \
+	echo "make -j build ARCH=wasm COMP=emscripten" && \
 	echo ""
 ifneq ($(SUPPORTED_ARCH), true)
 	@echo "Specify a supported architecture with the ARCH option for more details"
@@ -1010,7 +1018,7 @@ install:
 	$(STRIP) $(BINDIR)/$(EXE)
 
 # clean all
-clean: objclean profileclean
+clean: objclean profileclean wasmclean
 	@rm -f .depend *~ core
 
 # clean binaries and objects
@@ -1085,7 +1093,7 @@ config-sanity: net
 	(test "$(arch)" = "any" || test "$(arch)" = "x86_64" || test "$(arch)" = "i386" || \
 	 test "$(arch)" = "ppc64" || test "$(arch)" = "ppc" || test "$(arch)" = "e2k" || \
 	 test "$(arch)" = "armv7" || test "$(arch)" = "armv8" || test "$(arch)" = "arm64" || \
-	 test "$(arch)" = "riscv64" || test "$(arch)" = "loongarch64") && \
+	 test "$(arch)" = "riscv64" || test "$(arch)" = "loongarch64" || test "$(arch)" = "wasm") && \
 	(test "$(bits)" = "32" || test "$(bits)" = "64") && \
 	(test "$(prefetch)" = "yes" || test "$(prefetch)" = "no") && \
 	(test "$(popcnt)" = "yes" || test "$(popcnt)" = "no") && \
@@ -1106,9 +1114,9 @@ config-sanity: net
 	(test "$(lasx)" = "yes" || test "$(lasx)" = "no") && \
 	(test "$(comp)" = "gcc" || test "$(comp)" = "icx" || test "$(comp)" = "mingw" || \
 	 test "$(comp)" = "clang" || test "$(comp)" = "armv7a-linux-androideabi16-clang" || \
-	 test "$(comp)" = "aarch64-linux-android21-clang")
+	 test "$(comp)" = "aarch64-linux-android21-clang" || test "$(comp)" = "emscripten")
 
-$(EXE): $(OBJS)
+$(EXE): $(OBJS) emscripten/pre.js
 	+$(CXX) -o $@ $(OBJS) $(LDFLAGS)
 
 # Force recompilation to ensure version info is up-to-date
