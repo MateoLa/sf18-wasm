@@ -6,7 +6,7 @@
 
 <p>Stockfish is a free and powerful UCI chess engine</p> 
 <p>It analyzes chess positions and calculates optimal moves</p>
-<p>Here we complile it with Emscripten for WebAssembly</p>
+<p>Here we complile it for WebAssembly</p>
 </div>
 
 
@@ -42,20 +42,9 @@ src/uci.cpp
 src/emscripten # directory added
 ```
 
-### Usage
-
-Test SF18 WebAssembly Version
-
-```sh
-cd server
-emrun sf.html --no_emrun_detect
-```
-
-emrun is a Emscripten local web server and test tool.
-
-
 #### Prerequisites
-To compile Stockfish by yourself
+
+Follow this steps to compile sf18-wasm by yourself or skip to [Usage](#Usage)
 
 Install GCC/g++ compilers required to compile C/C++ programs in Linux
 
@@ -79,7 +68,7 @@ emcc --version
 ```
 
 
-#### Build Stockfish
+#### Build sf18-wasm
 
 ```sh
 cd src
@@ -93,6 +82,18 @@ If you whant to delete all your outputs:
 ```sh
 make ARCH=wasm clean
 ```
+
+
+### Usage
+
+Test sf18-wasm
+
+```sh
+cd server
+emrun sf.html --no_emrun_detect
+```
+
+emrun is an Emscripten local web server and test tool.
 
 
 #### Test Stockfish through the console
