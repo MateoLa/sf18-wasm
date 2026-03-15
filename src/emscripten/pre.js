@@ -1,51 +1,50 @@
-// Sin Uso. (Se usa en utils.h en la funcion emscripten_utils_getline)
-// Simple queue (assume single consumer)
-//
-class Queue {
-  constructor() {
-    this.getter = null;
-    this.list = [];
+Module["engine_ready"] = Module["engine_ready"] || false;
+Module["send_command"] = Module["send_command"] || (() => {});
+Module["read_stdout"] = Module["read_stdout"] || ((output) => console.log(output));
+
+if (!Module["preRun"]) Module["preRun"] = [];
+Module["preRun"].push(function () {
+  let input = {
+    str: "",
+    index: 0,
+    set: function (str) {
+      this.str = str + "\n";
+      this.index = 0;
+    },
+  };
+
+  let output = {
+    str: "",
+    flush: function () {
+      Module.read_stdout(this.str);
+      this.str = "";
+    },
+  };
+
+  function stdin() {
+    // Return ASCII code of character, or null if no input
+    let char = input.str.charCodeAt(input.index++);
+    return isNaN(char) ? null : char;
   }
-  async get() {
-    if (this.list.length > 0) {
-      return this.list.shift();
+
+  function stdout(char) {
+    if (!char || char == "\n".charCodeAt(0)) {
+      output.flush();
+    } else {
+      output.str += String.fromCharCode(char);
     }
-    return await new Promise((resolve) => (this.getter = resolve));
   }
-  put(x) {
-    if (this.getter) {
-      this.getter(x);
-      this.getter = null;
-      return;
-    }
-    this.list.push(x);
-  }
-}
 
+  FS.init(stdin, stdout, stdout);
+  let wasm_uci_execute = Module.cwrap("wasm_uci_execute", "void", []);
+  Module.send_command = function (data) {
+    input.set(data);
+    wasm_uci_execute();
+  };
+});
 
-//
-// API
-//
-
-const listeners = [];
-
-Module["addMessageListener"] = (listener) => {
-  listeners.push(listener);
-};
-
-Module["removeMessageListener"] = (listener) => {
-  const i = listeners.indexOf(listener);
-  if (i >= 0) listeners.splice(i, 1);
-};
-
-Module["print"] = Module["printErr"] = (data) => {
-  if (listeners.length === 0) {
-    console.log(data);
-    return;
-  }
-  for (let listener of listeners) {
-    listener(data);
-  }
+Module["onRuntimeInitialized"] = function () {
+  Module.engine_ready = true;
 };
 
 Module["terminate"] = () => {

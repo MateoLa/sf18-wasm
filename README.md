@@ -38,6 +38,7 @@ Added or modified files:
 ```sh
 src/Makefile
 src/misc.cpp
+src/uci.cpp
 src/emscripten # directory added
 ```
 
@@ -87,6 +88,11 @@ make ARCH=wasm build -j
 
 Build options can be set in /src/emscripten/Makefile
 If you use the "minify_js" option, the version is compiled with warnings.
+
+If you whant to delete all your outputs:
+```sh
+make ARCH=wasm clean
+```
 
 
 #### Test Stockfish through the console

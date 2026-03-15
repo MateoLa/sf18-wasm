@@ -5,7 +5,12 @@ COMP = emscripten
 EXE = ../server/sf18.js
 popcnt = yes
 
-CXX=emcc
+ifneq ($(KERNEL),Darwin)
+	CXX=em++
+else
+	CXX=emcc
+endif
+
 CXXFLAGS += -flto -DUSE_POPCNT
 
 # Build options
@@ -16,28 +21,31 @@ wasm_simd = no
 embedded_nnue = no
 debug = yes
 
-VPATH := $(VPATH):emscripten
+VPATH := $(VPATH):emscripten:../server
+
 LDFLAGS += -flto
 LDFLAGS += --pre-js emscripten/pre.js
 # LDFLAGS += --preload-file emscripten/pikafish.nnue@pikafish.nnue
-LDFLAGS += -s ENVIRONMENT=web,worker -s MODULARIZE=1 -s EXPORT_NAME="Stockfish" 
-LDFLAGS += -s ALLOW_MEMORY_GROWTH=1 -s INITIAL_MEMORY=$$((1 << 27)) -s MAXIMUM_MEMORY=$$((1 << 31))
+LDFLAGS += -s ENVIRONMENT=web,worker -s MODULARIZE=1 -s EXPORT_NAME="Stockfish"
+LDFLAGS += -s ALLOW_MEMORY_GROWTH=1 -s INITIAL_MEMORY=134217728 -s MAXIMUM_MEMORY=2147483648
 LDFLAGS += -s FILESYSTEM=1
 LDFLAGS += -s "EXPORTED_RUNTIME_METHODS=['cwrap']"
-# LDFLAGS += -s EXPORTED_FUNCTIONS="['_main', '_wasm_uci_execute']"
+LDFLAGS += -s EXPORTED_FUNCTIONS="['_main', '_wasm_uci_execute']"
 LDFLAGS += -s ALLOW_UNIMPLEMENTED_SYSCALLS
 
+# Try echo $((1 << 27)) = (1 left shift 27 times in binary) = 2^27 = 134217728 = 128MB 
+# 2^31 = 2147483648 = 2GB
 
 ifeq ($(minify_js),yes)
 	LDFLAGS += --closure 1
 else
-	EMFLAGS += --closure 0 --minify 0
+	LDFLAGS += --closure 0 --minify 0
 endif
 
 ifeq ($(assertion),yes)
-	EMFLAGS += -s ASSERTIONS=1
+	LDFLAGS += -s ASSERTIONS=1
 else
-	EMFLAGS += -s ASSERTIONS=0
+	LDFLAGS += -s ASSERTIONS=0
 endif
 
 ifeq ($(multithread),yes)
@@ -68,7 +76,7 @@ EM_EMSCRIPTEN = $(shell emsdk list | grep INSTALLED | head -n 1 | awk '{ print $
 
 EXTRACXXFLAGS += -DEM_EMSCRIPTEN=$(EM_EMSCRIPTEN)
 
-EM_ARTIFACTS += ../server/sf18.js ../server/sf18.wasm ../server/sf18.worker.js
+EM_ARTIFACTS += ../server/sf18.js ../server/sf18.wasm ../server/sf18.js.symbols
 
-wasmclean: clean
+wasmclean:
 	@rm -f $(EM_ARTIFACTS)

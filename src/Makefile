@@ -43,7 +43,9 @@ endif
 ### Target Windows OS
 ifeq ($(OS),Windows_NT)
 	ifneq ($(COMP),ndk)
+	ifneq ($(COMP),emscripten)
 		target_windows = yes
+	endif
 	endif
 else ifeq ($(COMP),mingw)
 	target_windows = yes
@@ -548,9 +550,14 @@ endif
 ifeq ($(KERNEL),Darwin)
 	CXXFLAGS += -mmacosx-version-min=10.15
 	LDFLAGS += -mmacosx-version-min=10.15
-	ifneq ($(arch),any)
-		CXXFLAGS += -arch $(arch)
-		LDFLAGS += -arch $(arch)
+	ifeq ($(arch),wasm)
+		CXXFLAGS += -s WASM=1
+		LDFLAGS += -s WASM=1
+	else
+		ifneq ($(arch),any)
+			CXXFLAGS += -arch $(arch)
+			LDFLAGS += -arch $(arch)
+		endif
 	endif
 	XCRUN = xcrun
 endif
@@ -633,6 +640,7 @@ endif
 
 ### On mingw use Windows threads, otherwise POSIX
 ifneq ($(comp),mingw)
+ifneq ($(comp),emscripten)
 	CXXFLAGS += -DUSE_PTHREADS
 	# On Android Bionic's C library comes with its own pthread implementation bundled in
 	ifneq ($(OS),Android)
@@ -656,6 +664,7 @@ ifneq ($(comp),mingw)
 			endif
 		endif
 	endif
+endif
 endif
 
 ### 3.2.1 Debugging
@@ -683,7 +692,6 @@ ifeq ($(optimize),yes)
 		endif
 	endif
 
-	ifneq ($(COMP),emscripten)
 	ifeq ($(KERNEL),Darwin)
 		ifeq ($(comp),$(filter $(comp),clang icx))
 			CXXFLAGS += -mdynamic-no-pic
@@ -701,7 +709,6 @@ ifeq ($(optimize),yes)
 		ifeq ($(shell expr $(clangmajorversion) \< 16),1)
 			CXXFLAGS += -fexperimental-new-pass-manager
 		endif
-	endif
 	endif
 endif
 

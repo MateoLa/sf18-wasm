@@ -39,6 +39,12 @@
 #include "types.h"
 #include "ucioption.h"
 
+#if defined(__EMSCRIPTEN__)
+    #define EM_STATIC static
+#else
+    #define EM_STATIC 
+#endif
+
 namespace Stockfish {
 
 constexpr auto BenchmarkCommand = "speedtest";
@@ -659,3 +665,26 @@ void UCIEngine::on_bestmove(std::string_view bestmove, std::string_view ponder) 
 }
 
 }  // namespace Stockfish
+
+// Execute UCI::loop() only once.
+extern "C" void wasm_uci_execute() {
+    using namespace Stockfish;
+
+    std::string input;
+    std::getline(std::cin, input);
+    char *argv[2] = {input.data(), input.data()};
+    CommandLine cli(2, argv);
+
+    EM_STATIC std::unique_ptr<UCI> uci;
+    [[maybe_unused]] EM_STATIC auto __init_once = [&]() {
+        Bitboards::init();
+        Position::init();
+        uci = std::make_unique<UCI>(2, argv);
+        Tune::init(uci->options);
+        uci->evalFile = Eval::NNUE::load_networks(uci->workingDirectory(), uci->options, uci->evalFile);
+        return 0;
+    }();
+
+    uci->set_cli(cli);
+    uci->loop();
+}

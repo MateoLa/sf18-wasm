@@ -77,4 +77,7 @@ class UCIEngine {
 
 }  // namespace Stockfish
 
+// For web-assembly, we only execute UCI::loop() once avoiding blocking of main thread.
+extern "C" void wasm_uci_execute();
+
 #endif  // #ifndef UCI_H_INCLUDED
