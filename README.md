@@ -95,6 +95,20 @@ emrun sf.html --no_emrun_detect
 
 emrun is an Emscripten local web server and test tool.
 
+Enter some UCI commands:
+
+```sh
+uci
+isready
+position startpos
+position fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+position fen 4r1k1/r1q2ppp/ppp2n2/4P3/5Rb1/1N1BQ3/PPP3PP/R5K1 w - - 1 17
+# start the calculation
+go depth 20  # by depth
+go movetime 5000  # by time (calculate for 5 seconds)
+quit
+```
+
 
 #### Test Stockfish through the console
 
@@ -175,6 +189,5 @@ stockfish.onmessage = function(event) {
 
 Thanks to the [Stockfish](https://github.com/official-stockfish/Stockfish) team and all its contributors.
 
-The WebAssembly compilation is based on [Hiroshi Ogawa](https://github.com/hi-ogawa/Stockfish) work and <br>
-[Lichess](https://github.com/lichess-org/stockfish.js)
+Some WebAssembly compilation ideas are based on [Hiroshi Ogawa](https://github.com/hi-ogawa/Stockfish) work and the wasm branch of [Pikafish](https://github.com/official-pikafish/Pikafish)
 
