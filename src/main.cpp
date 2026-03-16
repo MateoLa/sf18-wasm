@@ -27,17 +27,22 @@
 
 using namespace Stockfish;
 
+// Execute UCI::loop() outside the main function.
+extern "C" void wasm_uci_execute(int argc, char* argv[]) {
+    auto uci = std::make_unique<UCIEngine>(argc, argv);
+
+    Tune::init(uci->engine_options());
+
+    uci->loop();
+}
+
 int main(int argc, char* argv[]) {
     std::cout << engine_info() << std::endl;
 
     Bitboards::init();
     Position::init();
 
-    auto uci = std::make_unique<UCIEngine>(argc, argv);
-
-    Tune::init(uci->engine_options());
-
-    uci->loop();
+    wasm_uci_execute(argc, argv);
 
     return 0;
 }

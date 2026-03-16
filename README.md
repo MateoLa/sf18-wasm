@@ -110,6 +110,15 @@ quit
 ```
 
 
+#### Highlights
+
+* Memory out of bounds
+
+Stockfish iterates through a decision tree in a while loop. We don't want to run it as is in a browser. Javascript been single threaded will hang indefinitely waiting for the loop to finish and you'll get a notification about a "Memory out of bounds" error.
+
+For this reason we move the loop logic in main() into a `wasm_uci_execute()` function that represents one iteration of the loop. This way JS runs that iteration and yields the processor back so doesn't appear blocked. 
+
+
 #### Test Stockfish through the console
 
 Download a compiled [relese of stockfish]('https://github.com/official-stockfish/Stockfish/releases/download/sf_18/stockfish-ubuntu-x86-64-vnni512.tar') for a specific architecture.
