@@ -1025,7 +1025,7 @@ install:
 	$(STRIP) $(BINDIR)/$(EXE)
 
 # clean all
-clean: objclean profileclean wasmclean
+clean: objclean profileclean
 	@rm -f .depend *~ core
 
 # clean binaries and objects
@@ -1143,7 +1143,7 @@ clang-profile-use:
 	EXTRALDFLAGS='-fprofile-use ' \
 	all
 
-gcc-profile-make:
+gcc-profile-make::
 	@mkdir -p profdir
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
 	EXTRACXXFLAGS='-fprofile-generate=profdir' \
@@ -1151,7 +1151,7 @@ gcc-profile-make:
 	EXTRALDFLAGS='-lgcov' \
 	all
 
-gcc-profile-use:
+gcc-profile-use::
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
 	EXTRACXXFLAGS='-fprofile-use=profdir -fno-peel-loops -fno-tracer' \
 	EXTRACXXFLAGS+=$(EXTRAPROFILEFLAGS) \

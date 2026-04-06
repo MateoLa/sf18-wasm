@@ -25,8 +25,13 @@
 #include "tune.h"
 #include "uci.h"
 
+#ifdef __EMSCRIPTEN__
+    #include <emscripten.h>
+#endif
+
 using namespace Stockfish;
 
+/*
 // Execute UCI::loop() outside the main function.
 extern "C" void wasm_uci_execute(int argc, char* argv[]) {
     auto uci = std::make_unique<UCIEngine>(argc, argv);
@@ -35,6 +40,7 @@ extern "C" void wasm_uci_execute(int argc, char* argv[]) {
 
     uci->loop();
 }
+*/
 
 int main(int argc, char* argv[]) {
     std::cout << engine_info() << std::endl;
@@ -42,7 +48,12 @@ int main(int argc, char* argv[]) {
     Bitboards::init();
     Position::init();
 
-    wasm_uci_execute(argc, argv);
+//    wasm_uci_execute(argc, argv);
+    auto uci = std::make_unique<UCIEngine>(argc, argv);
+
+    Tune::init(uci->engine_options());
+
+    uci->loop();
 
     return 0;
 }

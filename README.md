@@ -38,7 +38,7 @@ Added or modified files:
 ```sh
 src/Makefile
 src/misc.cpp
-src/uci.cpp
+src/main.cpp
 src/emscripten # directory added
 ```
 
@@ -70,13 +70,18 @@ emcc --version
 
 #### Build sf18-wasm
 
+Build options can be set in /src/emscripten/Makefile
+If you use the "minify_js" option, the version is compiled with warnings.
+
 ```sh
 cd src
 make ARCH=wasm build -j
 ```
 
-Build options can be set in /src/emscripten/Makefile
-If you use the "minify_js" option, the version is compiled with warnings.
+Download the Neural Network. This command prepares the network to be embedded in the binary.
+```sh
+make net
+```
 
 If you whant to delete all your outputs:
 ```sh
@@ -114,9 +119,52 @@ quit
 
 * Memory out of bounds
 
-Stockfish iterates through a decision tree in a while loop. We don't want to run it as is in a browser. Javascript been single threaded will hang indefinitely waiting for the loop to finish and you'll get a notification about a "Memory out of bounds" error.
+Stockfish iterates through a decision tree in a while loop. We don't want to run it as is in a browser. Javascript been single threaded will hang indefinitely waiting for the loop to finish and you'll get a notification about a "RuntimeError: memory access out of bounds" error.
 
 For this reason we move the loop logic in main() into a `wasm_uci_execute()` function that represents one iteration of the loop. This way JS runs that iteration and yields the processor back so doesn't appear blocked. 
+
+* Whick Kernel I'm runing
+
+```sh
+$ uname -r
+6.8.0-106-generic
+
+$ uname -a
+Linux mateo-Crosshair 6.8.0-106-generic #106~22.04.1-Ubuntu SMP PREEMPT_DYNAMIC Fri Mar  6 08:44:59 UTC  x86_64 x86_64 x86_64 GNU/Linux
+```
+
+* Which compiler
+
+```sh
+$ gcc --version
+gcc (Ubuntu 9.5.0-1ubuntu1~22.04.1) 9.5.0
+Copyright (C) 2019 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+```
+
+
+### Common Errors
+
+* Stack overflow detected.  You can try increasing -sSTACK_SIZE
+* Memory access out of bounds
+
+Compiling with the option `debug=yes` the error points to:
+    bitboard.cpp:146:29  --> reference[size] = Bitboards::sliding_attack(pt, s, b);
+    bitboard.cpp:79  --> init_magics(ROOK, RookTable, Magics);
+
+Compiling with the option `-fsanitize=undefined,address` the browser reports: `AddressSanitizer: out of memory: allocator is trying to allocate 0xa0100000 bytes` which is 2685403136 bytes or 2,5 GB.
+
+* nnue/layers/../simd.h:49:20: error: unknown type name '__m512i' Error
+
+WebAssembly does not support 512 bytes operations.<br>
+Read [Using SIMD with WebAssembly](https://emscripten.org/docs/porting/simd.html)<br>
+Compile adding -msimd128 for WebAssembly
+
+* wasm-ld: error: unable to find library -lgcov
+
+Emscripten uses Clang as its underlying C and C++ compiler. -lgcov is not supported by clang/llvm for code coverage.<br>
+Replace -lgcov with --coverage flag.
 
 
 #### Test Stockfish through the console
@@ -143,54 +191,6 @@ position fen 4r1k1/r1q2ppp/ppp2n2/4P3/5Rb1/1N1BQ3/PPP3PP/R5K1 w - - 1 17
 go depth 20  # by depth
 go movetime 5000  # by time (calculate for 5 seconds)
 quit
-```
-
-### Usage
-
-```js
-var wasmSupported = typeof WebAssembly === 'object' && WebAssembly.validate(Uint8Array.of(0x0, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00));
-
-var stockfish = new Worker(wasmSupported ? 'stockfish.wasm' : 'stockfish.js');
-
-stockfish.addEventListener('message', function (e) {
-  console.log(e.data);
-});
-
-stockfish.postMessage('uci');
-```
-
-
-### Common Errors
-
-* RuntimeError: table index is out of bounds --> Some UCI command is wrong
-
-
-
-#### Using the Compiled Engine
-
-The compiled engine is designed to run within a Web Worker to prevent blocking the main browser thread. It communicates using the standard Universal Chess Interface (UCI) protocol via messages. 
-
-Example of use in a web page (via Web Worker):
-
-```js
-// Create a new web worker instance using the compiled stockfish.js file
-var stockfish = new Worker('stockfish-18-single.js');
-
-// Send UCI commands to the engine
-stockfish.postMessage('uci');
-stockfish.postMessage('isready');
-stockfish.postMessage('position startpos moves e2e4');
-stockfish.postMessage('go depth 15');
-
-// Listen for messages (output) from the engine
-stockfish.onmessage = function(event) {
-    console.log(event.data);
-    if (event.data.startsWith('bestmove')) {
-        // Handle the best move
-        var bestMove = event.data.split(' ')[1];
-        // ... update your chess board GUI here
-    }
-};
 ```
 
 

@@ -3,7 +3,7 @@ bits = 64
 comp = emscripten
 COMP = emscripten
 EXE = ../server/sf18.js
-popcnt = yes
+
 
 ifneq ($(KERNEL),Darwin)
 	CXX=em++
@@ -15,9 +15,9 @@ CXXFLAGS += -flto -DUSE_POPCNT
 
 # Build options
 minify_js = no
-assertion = no
+assertion = yes
 multithread = no
-wasm_simd = no
+wasm_simd = yes
 embedded_nnue = no
 debug = yes
 
@@ -29,12 +29,14 @@ LDFLAGS += --pre-js emscripten/pre.js
 LDFLAGS += -s ENVIRONMENT=web,worker -s MODULARIZE=1 -s EXPORT_NAME="Stockfish"
 LDFLAGS += -s ALLOW_MEMORY_GROWTH=1 -s INITIAL_MEMORY=134217728 -s MAXIMUM_MEMORY=2147483648
 LDFLAGS += -s FILESYSTEM=1
-LDFLAGS += -s "EXPORTED_RUNTIME_METHODS=['cwrap']"
-LDFLAGS += -s EXPORTED_FUNCTIONS="['_main', '_wasm_uci_execute']"
+# LDFLAGS += -s "EXPORTED_RUNTIME_METHODS=['cwrap']"
+# LDFLAGS += -s EXPORTED_FUNCTIONS="['_main', '_wasm_uci_execute']"
 LDFLAGS += -s ALLOW_UNIMPLEMENTED_SYSCALLS
 
 # Try echo $((1 << 27)) = (1 left shift 27 times in binary) = 2^27 = 134217728 = 128MB 
 # 2^31 = 2147483648 = 2GB
+
+#  2685403136
 
 ifeq ($(minify_js),yes)
 	LDFLAGS += --closure 1
@@ -58,7 +60,7 @@ endif
 
 ifeq ($(wasm_simd),yes)
 	CXXFLAGS += -DUSE_WASM_SIMD -msimd128
-	SRCS += emscripten/wasm_simd.cpp
+#	SRCS += emscripten/wasm_simd.cpp
 endif
 
 ifeq ($(embedded_nnue),no)
@@ -68,15 +70,26 @@ endif
 ifeq ($(debug),yes)
 	LDFLAGS += --emit-symbol-map
 	ifeq ($(COMP),emscripten)
-		LDFLAGS +=  -g -fdebug-compilation-dir='..' -fsanitize=undefined
+		LDFLAGS += -gsource-map=inline --source-map-base http://localhost:6931/ -fdebug-compilation-dir='..' -fsanitize=undefined
+# 6931: emrun port
 	endif
 endif
+
 
 EM_EMSCRIPTEN = $(shell emsdk list | grep INSTALLED | head -n 1 | awk '{ print $$1 }')
 
 EXTRACXXFLAGS += -DEM_EMSCRIPTEN=$(EM_EMSCRIPTEN)
 
-EM_ARTIFACTS += ../server/sf18.js ../server/sf18.wasm ../server/sf18.js.symbols
+EM_ARTIFACTS += ../server/sf18.js ../server/sf18.wasm ../server/sf18.js.symbols ../server/sf18.wasm.map
 
-wasmclean:
+
+gcc-profile-make gcc-profile-use::
+	EXTRALDFLAGS = $(filter-out '-lgcov', $(EXTRALDFLAGS))
+	EXTRALDFLAGS += '--coverage'
+
+gcc-profile-make gcc-profile-use::
+	@echo "MaLa bulding wiht coverage: $(EXTRALDFLAGS)"
+
+clean: wasm-clean
+wasm-clean:
 	@rm -f $(EM_ARTIFACTS)
