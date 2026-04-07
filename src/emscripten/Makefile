@@ -27,16 +27,12 @@ LDFLAGS += -flto
 LDFLAGS += --pre-js emscripten/pre.js
 # LDFLAGS += --preload-file emscripten/pikafish.nnue@pikafish.nnue
 LDFLAGS += -s ENVIRONMENT=web,worker -s MODULARIZE=1 -s EXPORT_NAME="Stockfish"
-LDFLAGS += -s ALLOW_MEMORY_GROWTH=1 -s INITIAL_MEMORY=134217728 -s MAXIMUM_MEMORY=2147483648
+LDFLAGS += -s ALLOW_MEMORY_GROWTH=1 -s INITIAL_MEMORY=128MB -s MAXIMUM_MEMORY=4GB
 LDFLAGS += -s FILESYSTEM=1
 # LDFLAGS += -s "EXPORTED_RUNTIME_METHODS=['cwrap']"
 # LDFLAGS += -s EXPORTED_FUNCTIONS="['_main', '_wasm_uci_execute']"
 LDFLAGS += -s ALLOW_UNIMPLEMENTED_SYSCALLS
 
-# Try echo $((1 << 27)) = (1 left shift 27 times in binary) = 2^27 = 134217728 = 128MB 
-# 2^31 = 2147483648 = 2GB
-
-#  2685403136
 
 ifeq ($(minify_js),yes)
 	LDFLAGS += --closure 1
@@ -70,7 +66,7 @@ endif
 ifeq ($(debug),yes)
 	LDFLAGS += --emit-symbol-map
 	ifeq ($(COMP),emscripten)
-		LDFLAGS += -gsource-map=inline --source-map-base http://localhost:6931/ -fdebug-compilation-dir='..' -fsanitize=undefined
+		LDFLAGS += -gsource-map=inline --source-map-base http://localhost:6931/ -fsanitize=undefined
 # 6931: emrun port
 	endif
 endif
@@ -84,8 +80,8 @@ EM_ARTIFACTS += ../server/sf18.js ../server/sf18.wasm ../server/sf18.js.symbols 
 
 
 gcc-profile-make gcc-profile-use::
-	EXTRALDFLAGS = $(filter-out '-lgcov', $(EXTRALDFLAGS))
-	EXTRALDFLAGS += '--coverage'
+	EXTRALDFLAGS=$(filter-out '-lgcov', $(EXTRALDFLAGS))
+	EXTRALDFLAGS+='--coverage'
 
 gcc-profile-make gcc-profile-use::
 	@echo "MaLa bulding wiht coverage: $(EXTRALDFLAGS)"

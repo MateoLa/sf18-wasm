@@ -36,7 +36,9 @@ Module["preRun"].push(function () {
   }
 
   FS.init(stdin, stdout, stdout);
-//  let wasm_uci_execute = Module.cwrap("wasm_uci_execute", "void", []);
+
+  //  let wasm_uci_execute = Module.cwrap("wasm_uci_execute", "void", []);
+
   Module.send_command = function (data) {
     input.set(data);
     wasm_uci_execute();

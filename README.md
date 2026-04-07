@@ -146,14 +146,20 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 ### Common Errors
 
-* Stack overflow detected.  You can try increasing -sSTACK_SIZE
+* Stack overflow detected.  You can try increasing -sSTACK_SIZE (currently set to 65536)
+
+Change the value of MAXIMUM_MEMORY to 4GB
+
 * Memory access out of bounds
 
 Compiling with the option `debug=yes` the error points to:
     bitboard.cpp:146:29  --> reference[size] = Bitboards::sliding_attack(pt, s, b);
     bitboard.cpp:79  --> init_magics(ROOK, RookTable, Magics);
 
-Compiling with the option `-fsanitize=undefined,address` the browser reports: `AddressSanitizer: out of memory: allocator is trying to allocate 0xa0100000 bytes` which is 2685403136 bytes or 2,5 GB.
+Compiling with the option `-fsanitize=undefined,address` the browser reports: `AddressSanitizer: out of memory: allocator is trying to allocate 0xa0100000 bytes` (This is 2685403136 bytes or 2,5 GB).
+
+Default STACK_SIZE for Emscripten is 64 KBytes (65536 bytes).
+
 
 * nnue/layers/../simd.h:49:20: error: unknown type name '__m512i' Error
 
