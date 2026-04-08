@@ -29,31 +29,40 @@
     #include <emscripten.h>
 #endif
 
+#if defined(__EMSCRIPTEN__)
+    #define EM_STATIC static
+#else
+    #define EM_STATIC 
+#endif
+
+
 using namespace Stockfish;
 
-/*
-// Execute UCI::loop() outside the main function.
+
+// Execute UCI::loop() only once.
 extern "C" void wasm_uci_execute(int argc, char* argv[]) {
-    auto uci = std::make_unique<UCIEngine>(argc, argv);
+    using namespace Stockfish;
 
-    Tune::init(uci->engine_options());
+    [[maybe_unused]] EM_STATIC auto __init_once = [&]() {
 
-    uci->loop();
+        Bitboards::init();
+        Position::init();
+        
+        auto uci = std::make_unique<UCIEngine>(argc, argv);
+
+        Tune::init(uci->engine_options());
+
+        uci->loop();
+
+        return 0;
+    }();
 }
-*/
 
+// Argument Count & Argument Vector
 int main(int argc, char* argv[]) {
     std::cout << engine_info() << std::endl;
 
-    Bitboards::init();
-    Position::init();
-
-//    wasm_uci_execute(argc, argv);
-    auto uci = std::make_unique<UCIEngine>(argc, argv);
-
-    Tune::init(uci->engine_options());
-
-    uci->loop();
+    wasm_uci_execute(argc, argv);
 
     return 0;
 }

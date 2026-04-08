@@ -82,8 +82,6 @@ EM_ARTIFACTS += ../server/sf18.js ../server/sf18.wasm ../server/sf18.js.symbols 
 wasm-profile:
 ifeq ($(COMP),emscripten)
 EXTRALDFLAGS='--coverage'
-else
-EXTRALDFLAGS='-lgcov'
 endif
 
 clean: wasm-clean

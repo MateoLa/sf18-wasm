@@ -168,6 +168,13 @@ Emscripten uses Clang as its underlying C and C++ compiler. -lgcov is not suppor
 Replace -lgcov with --coverage flag.
 
 
+* em++: warning: export name is not a valid JS symbol - Use `Module` or `wasmExports` to access this symbol [-Wjs-compiler]
+
+```sh
+em++ --clear-cache
+```
+
+
 #### Test Stockfish through the console
 
 Download a compiled [relese of stockfish]('https://github.com/official-stockfish/Stockfish/releases/download/sf_18/stockfish-ubuntu-x86-64-vnni512.tar') for a specific architecture.
