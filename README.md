@@ -4,7 +4,7 @@
 
 <h3>WebAssembly Stockfish</h3>
 
-<p>[Stockfish](https://stockfishchess.org) is a free and powerful UCI chess engine. It analyzes chess positions and calculates optimal moves. Here we complile it for WebAssembly</p>
+<p><a src="https://stockfishchess.org">Stockfish</a> is a free and powerful UCI chess engine. It analyzes chess positions and calculates optimal moves. Here we complile it for WebAssembly</p>
 
 </div>
 
