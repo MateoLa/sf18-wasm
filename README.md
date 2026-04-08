@@ -10,7 +10,7 @@ Here we complile it for WebAssembly</p>
 </div>
 
 
-#### Universal Chess Interface - UCI protocol
+#### UCI - Universal Chess Interface
 
 Is a command line protocol. You will need to write UCI commands to stdin and listen to stdout. For example:
 
