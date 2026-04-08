@@ -1,6 +1,7 @@
 # Files from build
 **/*.o
 **/*.s
+**/*.out
 src/.depend
 
 # Built binary

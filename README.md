@@ -1,32 +1,40 @@
 <div align="center">
 
-[<img src=https://stockfishchess.org/images/logo/icon_128x128.png></img>](https://stockfishchess.org)
+[<img src=https://stockfishchess.org/images/logo/icon_128x128.png></img>](/docs/stockfish.md)
 
-<h3>Stockfish WebAssembly</h3>
+<h3>WebAssembly Stockfish</h3>
 
-<p>Stockfish is a free and powerful UCI chess engine</p> 
-<p>It analyzes chess positions and calculates optimal moves</p>
-<p>Here we complile it for WebAssembly</p>
+<p>[Stockfish](https://stockfishchess.org) is a free and powerful UCI chess engine. It analyzes chess positions and calculates optimal moves. Here we complile it for WebAssembly</p>
+
 </div>
 
 
 #### Universal Chess Interface - UCI protocol
 
-It is a command line protocol.
+Is a command line protocol. You will need to write UCI commands to stdin and listen to stdout. For example:
 
-You will need to write to stdin ([UCI commands](https://backscattering.de/chess/uci/)) and listen to stdout.
+
+```sh
+uci
+isready
+position startpos
+position fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+position fen 4r1k1/r1q2ppp/ppp2n2/4P3/5Rb1/1N1BQ3/PPP3PP/R5K1 w - - 1 17
+# start the calculation
+go depth 20  # by depth
+go movetime 5000  # by time (calculate for 5 seconds)
+quit
+```
 
 
 #### WebAssembly 
 
-Wasm is a binary instruction format for a stack-based virtual machine.
-
-The code can be run in a modern browser to build a virtual machine which allows developers to run compiled codes (C++, Rust, etc.) on the client.
+Wasm is a binary instruction format for a stack-based virtual machine. The code could be run in modern browsers to execute compiled code (C++, Rust, Go, etc.) over the virtual machine.
 
 WebAssembly is designed to complement and run alongside JavaScript, sharing functionality between them.
 
 
-#### Source Code Modification
+#### Stockfish source code modifications
 
 Stockfish is written in C++ to maximize speed execution. It has been optimized for certain HW architectures but its compilation for web browsers has not been taken into account.
 
@@ -89,9 +97,7 @@ make ARCH=wasm clean
 ```
 
 
-### Usage
-
-Test sf18-wasm
+### Try sf18-wasm
 
 ```sh
 cd server
@@ -100,19 +106,7 @@ emrun sf.html --no_emrun_detect
 
 emrun is an Emscripten local web server and test tool.
 
-Enter some UCI commands:
-
-```sh
-uci
-isready
-position startpos
-position fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
-position fen 4r1k1/r1q2ppp/ppp2n2/4P3/5Rb1/1N1BQ3/PPP3PP/R5K1 w - - 1 17
-# start the calculation
-go depth 20  # by depth
-go movetime 5000  # by time (calculate for 5 seconds)
-quit
-```
+Enter some UCI commands.
 
 
 #### Highlights

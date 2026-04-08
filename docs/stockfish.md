@@ -8,105 +8,23 @@
 <p>Analyzes chess positions and computes optimal moves.</p>
 </div>
 
-#### Universal Chess Interface - UCI protocol
 
-It is a command line protocol.
+#### Bitboards
 
-You will need to write to stdin ([UCI commands](https://backscattering.de/chess/uci/)) and listen to stdout.
+To represent the board we typically need one bitboard for each piece-type and color. Thus an array of bitboards is one position object.
+A one-bit inside a bitboard implies the existence of a piece of this piece-type on a certain square.
 
-Compiling stockfish generates a binary file `make build ARCH=x86-64-avx2 > build.log 2>&1`
+Bitboards can also represent things like attack and defend sets, move-targets and so on.
 
+piece-types = {P, N, B, R, Q, K}
 
-#### WebAssembly 
+colors = {w, b}
 
-Wasm is a binary instruction format for a stack-based virtual machine.
+class Board = {wP, wN, wB, wR, wQ, wK, bP, bN, bB, bR, bQ, bK}
 
-The code can be run in a modern browser to build a virtual machine which allows developers to run compiled codes (C++, Rust, etc.) on the client.
+The bitboard maps all squares on a chessboard from a1 to h8 been a1 = LSB = 2^0 and h8 = MSB = 2^63
 
-WebAssembly is designed to complement and run alongside JavaScript, sharing functionality between them.
+Little-Endian Rank-File Mapping: {a1, b1, c1, ..., f8, g8, h8}
+Little-Endian File-Rank Mapping: {a1, a2, a3, ..., h6, h7, h8}
 
-
-### Prerequisites
-
-* Install Node
-
-* Install Emscripten
-
-* Set working directory to stockfish/src/
-
-* Build  
-
-```sh
-cd src
-make ARCH=wasm build -j`
-```
-
-Build options can be set in /src/emscripten/Makefile
-If you use the "minify_js" option, the version is compiled with warnings.
-
-
-### Run the test Server
-
-```js
-cd server
-npm install
-node app.js
-```
-
-WebAssembly requires these HTTP headers on the top level response:
-
-```
-Cross-Origin-Embedder-Policy: require-corp
-Cross-Origin-Opener-Policy: same-origin
-```
-
-
-### Example of Stockfish UCI commands
-
-To send throught the UCI form:
-
-```sh
-uci
-setoption name UCI_AnalyseMode value true
-setoption name Analysis Contempt value Off
-setoption name Threads value 32
-setoption name Hash value 1024
-position fen 4r1k1/r1q2ppp/ppp2n2/4P3/5Rb1/1N1BQ3/PPP3PP/R5K1 w - - 1 17
-go depth ' + nr
-```
-
-### Usage
-
-```js
-var wasmSupported = typeof WebAssembly === 'object' && WebAssembly.validate(Uint8Array.of(0x0, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00));
-
-var stockfish = new Worker(wasmSupported ? 'stockfish.wasm' : 'stockfish.js');
-
-stockfish.addEventListener('message', function (e) {
-  console.log(e.data);
-});
-
-stockfish.postMessage('uci');
-```
-
-
-### Common Errors
-
-* RuntimeError: table index is out of bounds --> Some UCI command is wrong
-
-#### Added and Modified Files:
-
-```sh
-src/Makefile
-src/misc.cpp
-src/emscripten directory added
-/server directory added
-```
-
-### Acknowledgements
-
-Thanks to the [Stockfish](https://github.com/official-stockfish/Stockfish) team and all its contributors.
-
-The WebAssembly compilation is based on [Hiroshi Ogawa](https://github.com/hi-ogawa/Stockfish) and <br>
-[Lichess](https://github.com/lichess-org/stockfish.js)
 

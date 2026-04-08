@@ -78,13 +78,13 @@ EXTRACXXFLAGS += -DEM_EMSCRIPTEN=$(EM_EMSCRIPTEN)
 
 EM_ARTIFACTS += ../server/sf18.js ../server/sf18.wasm ../server/sf18.js.symbols ../server/sf18.wasm.map
 
-
-gcc-profile-make gcc-profile-use::
-	EXTRALDFLAGS=$(filter-out '-lgcov', $(EXTRALDFLAGS))
-	EXTRALDFLAGS+='--coverage'
-
-gcc-profile-make gcc-profile-use::
-	@echo "MaLa bulding wiht coverage: $(EXTRALDFLAGS)"
+# ToDo --> You need to bench a js file from console. May be calling node?
+wasm-profile:
+ifeq ($(COMP),emscripten)
+EXTRALDFLAGS='--coverage'
+else
+EXTRALDFLAGS='-lgcov'
+endif
 
 clean: wasm-clean
 wasm-clean:
