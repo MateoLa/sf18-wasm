@@ -2,10 +2,10 @@
 
 <img src=/assets/Queens_Star.jpg></img>
 
-<h3>Stockfish</h3>
+<h3>Bitboards</h3>
 
-<p>A free and strong UCI chess engine.</p>
-<p>Analyzes chess positions and computes optimal moves.</p>
+<p>Also called bitmaps or Square Sets</p>
+<p>Represents the board inside a chess program</p>
 </div>
 
 

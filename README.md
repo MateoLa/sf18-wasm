@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src=/assets/sf_128x128.png></img>
+<img src=/assets/stockfish_128x128.png></img>
 
 <h3>Stockfish Wasm</h3>
 
@@ -203,7 +203,7 @@ quit
 #### References
 
 To understand Stockfish: <br>
-  [Bitboards](/docs/bitboards.md)
+[Bitboards](/docs/bitboards.md)
 
 
 ### Acknowledgements
