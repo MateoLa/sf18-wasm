@@ -1,6 +1,6 @@
 <div align="center">
 
-[<img src=https://stockfishchess.org/images/logo/icon_128x128.png></img>](/docs/stockfish.md)
+<img src=/assets/sf_128x128.png></img>
 
 <h3>Stockfish Wasm</h3>
 
@@ -37,11 +37,7 @@ WebAssembly is designed to complement and run alongside JavaScript, sharing func
 
 #### Stockfish source code modifications
 
-Stockfish is written in C++ to maximize speed execution. It has been optimized for certain HW architectures but its compilation for web browsers has not been taken into account.
-
-We modify some files to achieve this objetive.<br>
-
-In "src/Makefile" we consider a new architecture and compiler values: wasm and emscripten. We also inclue "/emscripten/Makefile".
+Stockfish is written in C++ to maximize speed execution. The code has been optimized for certain HW architectures but compilation for web browsers has not been taken into account. We modify some files to achieve this objetive.
 
 Added or modified files:
 ```sh
@@ -50,6 +46,9 @@ src/misc.cpp
 src/main.cpp
 src/emscripten # directory added
 ```
+
+In "src/Makefile" we consider a new architecture and compiler: "wasm" and "emscripten".
+
 
 #### Prerequisites
 
@@ -200,6 +199,11 @@ go depth 20  # by depth
 go movetime 5000  # by time (calculate for 5 seconds)
 quit
 ```
+
+#### References
+
+To understand Stockfish: <br>
+  [Bitboards](/docs/bitboards.md)
 
 
 ### Acknowledgements

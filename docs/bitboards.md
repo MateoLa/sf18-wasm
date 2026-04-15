@@ -1,6 +1,6 @@
 <div align="center">
 
-[<img src=https://stockfishchess.org/images/logo/icon_128x128.png></img>](https://stockfishchess.org)
+<img src=/assets/Queens_Star.jpg></img>
 
 <h3>Stockfish</h3>
 
@@ -32,7 +32,7 @@ In C++ one bitboard is represented by an unsigned 64, U64 variable. In Javascrip
 
 From now on it is very important to notice:
 
-  * square a1 = LSB (lowest significant bit) <br>
+  * square a1 = LSB (least significant bit) <br>
   * square h8 = MSB (most significant bit) <br>
   * In boolean operations the binary are written from left to right (as is also the case with decimals) so the binary representation of the board will be: <br> 
   {h8, g8, f8, ...c1, b1, a1} <br>
@@ -178,14 +178,17 @@ x86-64 rot64 works like a generalized shift with positive or negative shift amou
 
 #### Square Operations
 
-U64 singleBitset = C64(1) << square; <br>
-Where square is the index of the board from 1 to 64.
+U64 singleBitset = C64(1) << sq; <br>
+Where "sq" is the square index from 0 to 63 <br>
+C64(1) is the 64 bits binary "1" or the binary 000...001 (with 63 zeros).
 
-if (bb & singleBitset)  -->  The bit denoted by singleBitset is set.
-bb |= singleBitset;  -->  Set the bit denoted by singleBitset.
-bb ^= singleBitset;  -->  Toggle the bit of square index.
-bb &= ~singleBitset;  -->  Reset the bit
-{ bb |= singleBitset; bb ^= singleBitset; }  --> Reset the bit by setting it and toggling.
+```C++
+if (bb & singleBitset)  //  Check if the bit denoted by singleBitset is set.
+bb |= singleBitset;  //  Set the bit denoted by singleBitset (boolean or operation).
+bb ^= singleBitset;  //  Toggle the bit of square index (boolean xor)
+bb &= ~singleBitset;  //  Reset the bit (boolean relative complement)
+{ bb |= singleBitset; bb ^= singleBitset; }  // Reset the bit by setting it and toggling.
+```
 
 x86 processors provides a bit-test instruction family (bt, bts, btr, btc) 
 
@@ -227,44 +230,118 @@ emptyBB ^= fromBB;  # update empty.
 
 Similar for special moves like castling, promotions and en-passant captures.
 
+#### Upper and Lower bits
+
+U64 upperBits = C64(~1) << sq;
+U64 lowerBits = (C64(1) << sq) -1;
+
 
 #### Swapping Bits
 
-U64 upperBits = C64(~1) << square;
-U64 lowerBits = (C64(1) << square) -1;
+Swapping none overlapping bit-sequences in a bitboard is the base of a lot of permutation tricks.
 
-* by Position <br>
+
+#### Swapping Bits by Position
+
 Swap n bits between positions i and j
 
-Example:
+```C++
+/**
+ * @param b any bitboard
+ * @param i,j positions of bit sequences to swap
+ * @param n number of consecutive bits to swap
+ * @return bitboard b with bits swapped
+ */
+U64 swapNBits(U64 b, int i, int j, int n) {
+  U64 m = (1 << n) - 1;
+  U64 x = ((b >> i) ^ (b >> j)) & m;
+  return b ^ (x << i) ^ (x << j);
+}
+```
+
+Example: Swap 6 bits between positions c3 and c6. <br>
+(i = 17, j = 41, n = 6)
+
 ```sh
-* * * * * * * *              * * * * * * * * 
-* * * * * * * *              * * * * * * * * 
+bb:                          swaped bb:
+* * . . . * * *              * * . . . * * * 
+* * . . . * * *              * * . . . * * * 
 * a b c d e f *              * A B C D E F * 
 * * * * * * * *     =>       * * * * * * * * 
 * * * * * * * *              * * * * * * * * 
 * A B C D E F *              * a b c d e f *
-* * * * * * * *              * * * * * * * * 
-* * * * * * * *              * * * * * * * * 
+* * . . . . . *              * * . . . . . * 
+* * . . . . . *              * * . . . . . * 
 ```
 
-bb: any bitboard <br>
-i, j: positions of bit sequences to swap <br>
-n: number of consecutive bits to swap
+```sh
+ 1<<6                 m = (1<<6) - 1
+ . . . . . . . .      . . . . . . . .
+ . . . . . . . .      . . . . . . . .
+ . . . . . . . .      . . . . . . . .
+ . . . . . . . .      . . . . . . . .
+ . . . . . . . .      . . . . . . . .
+ . . . . . . . .      . . . . . . . .
+ . . . . . . . .      . . . . . . . .
+ . . . . . . 1 .      1 1 1 1 1 1 . .
+                                            xor =
+ bb >> i(17)          bb >> j(41)           (bb>>i) ^ (bb>>j)     x = xor & m        with
+ . . . . . . . .      . . . . . . . .       . . . . . . . .       . . . . . . . .    
+ . . . . . . . .      . . . . . . . .       . . . . . . . .       . . . . . . . .
+ * . . . * * * .      . . . . . . . .       * . . . * * * .       . . . . . . . .    r = a ^ A
+ * . . . * * * *      . . . . . . . .       * . . . * * * *       . . . . . . . .    s = b ^ B
+ a b c d e f * *      . . . . . . . .       a b c d e f * *   =>  . . . . . . . .    t = c ^ C
+ * * * * * * * *      * . . . * * * .       . . . . . . . *       . . . . . . . .    u = d ^ D
+ * * * * * * * *      * . . . * * * *       . . . . . . . .       . . . . . . . .    v = e ^ E
+ A B C D E F * *      a b c d e f * *       r s t u v w . .       r s t u v w . .    w = f ^ F
 
-U64 swapNBits(U64 bb, int i, int j, int n) {
-  U64 m = (1 << n) - 1;
-  U64 x = ((bb >> i) ^ (bb >> j)) & m;
-  return bb ^ (x << i) ^ (x << j);
+bb                 x << i || x << j    swapNBits(bb, 17, 41, 6)
+* * . . . * * *    . . . . . . . .     . . . . . . . .
+* * . . . * * *    . . . . . . . .     * . . . . . . .
+* a b c d e f *    . r s t u v w .     * A B C D E F *
+* * * * * * * *    . . . . . . . .     . . . . . . . .
+* * * * * * * *    . . . . . . . .     . . . . . . . .
+* A B C D E F *    . r s t u v w .     . . . . . . . .
+* * . . . . . *    . . . . . . . .     * a b c d e f *
+* * . . . . . *    . . . . . . . .     . . . . . . . .
+```
+
+#### Delta Swap
+
+To swap by Delta you provide a mask for the lower portion of the bits to swap an the delta spaces between portions.
+
+In the example abobe, swap 6 bits between positions c3 and c6, delta is 24 = 41 - 17 and the mask is 0x7E0000
+
+```sh
+# mask = 0x7E0000
+. . . . . . . .
+. . . . . . . .
+. . . . . . . .
+. . . . . . . .
+. . . . . . . .
+. 1 1 1 1 1 1 .
+. . . . . . . .
+. . . . . . . .
+```
+
+```C++
+/**
+ * @param b any bitboard
+ * @return bitboard b with bits swapped
+ */
+U64 deltaSwap(U64 b, U64 mask, int delta) {
+   U64 x = (b ^ (b >> delta)) & mask;
+   return   x ^ (x << delta)  ^ b;
 }
+```
 
+In fact, we may apply any arbitrary mask pattern, as long as no overlapping occurs. To No overlapping the intersection of the mask with mask << delta must be empty.<br>
+For instance, we can swap odd with even files of a bitboard by calling deltaSwap with delta of one, and mask of 0x5555555555555555:
 
-
-
-
+Applications of delta swaps are flipping, mirroring and rotating boards.
 
 
 #### References
 
-[Bitboards](https://www.chessprogramming.org/Bitboards)
+Chess Programming Wiki [Bitboards](https://www.chessprogramming.org/Bitboards)
 
