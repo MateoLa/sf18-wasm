@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src=/assets/Queens_Star.jpg></img>
+<img src=/assets/Queens_Star.jpg width="180"></img>
 
 <h3>Bitboards</h3>
 
