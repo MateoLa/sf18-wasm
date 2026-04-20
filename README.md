@@ -4,16 +4,27 @@
 
 <h3>Stockfish Wasm</h3>
 
-<p> Stockfish is a free and powerful UCI chess engine. It analyzes chess positions and calculates optimal moves. <br>
+<p>Stockfish is a free and powerful UCI chess engine. It analyzes chess positions and calculates optimal moves. <br>
 Here we complile it for WebAssembly</p>
 
 </div>
 
 
+### Usage
+
+```sh
+cd server
+emrun sf.html --no_emrun_detect
+```
+
+emrun is an Emscripten local web server and test tool.
+
+Enter some UCI commands.
+
+
 #### UCI - Universal Chess Interface
 
 Is a command line protocol. You will need to write UCI commands to stdin and listen to stdout. For example:
-
 
 ```sh
 uci
@@ -52,7 +63,7 @@ In "src/Makefile" we consider a new architecture and compiler: "wasm" and "emscr
 
 #### Prerequisites
 
-Follow this steps to compile sf18-wasm by yourself or skip to [Usage](#Usage)
+To compile sf18-wasm by yourself follow this steps.
 
 Install GCC/g++ compilers required to compile C/C++ programs in Linux
 
@@ -97,84 +108,12 @@ make ARCH=wasm clean
 ```
 
 
-### Try sf18-wasm
+#### Debbuging 
 
-```sh
-cd server
-emrun sf.html --no_emrun_detect
-```
-
-emrun is an Emscripten local web server and test tool.
-
-Enter some UCI commands.
+When trying to compile our own version of Stockfish WebAssembly we face many errors which we summarize [here](/docs/debbuging.md).
 
 
-#### Highlights
-
-* Memory out of bounds
-
-Stockfish iterates through a decision tree in a while loop. We don't want to run it as is in a browser. Javascript been single threaded will hang indefinitely waiting for the loop to finish and you'll get a notification about a "RuntimeError: memory access out of bounds" error.
-
-For this reason we move the loop logic in main() into a `wasm_uci_execute()` function that represents one iteration of the loop. This way JS runs that iteration and yields the processor back so doesn't appear blocked. 
-
-* Whick Kernel I'm runing
-
-```sh
-$ uname -r
-6.8.0-106-generic
-
-$ uname -a
-Linux mateo-Crosshair 6.8.0-106-generic #106~22.04.1-Ubuntu SMP PREEMPT_DYNAMIC Fri Mar  6 08:44:59 UTC  x86_64 x86_64 x86_64 GNU/Linux
-```
-
-* Which compiler
-
-```sh
-$ gcc --version
-gcc (Ubuntu 9.5.0-1ubuntu1~22.04.1) 9.5.0
-Copyright (C) 2019 Free Software Foundation, Inc.
-This is free software; see the source for copying conditions.  There is NO
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-```
-
-
-### Common Errors
-
-* Stack overflow detected.  You can try increasing -sSTACK_SIZE (currently set to 65536)
-
-Change the value of MAXIMUM_MEMORY to 4GB
-
-* Memory access out of bounds
-
-Compiling with the option `debug=yes` the error points to:
-    bitboard.cpp:146:29  --> reference[size] = Bitboards::sliding_attack(pt, s, b);
-    bitboard.cpp:79  --> init_magics(ROOK, RookTable, Magics);
-
-Compiling with the option `-fsanitize=undefined,address` the browser reports: `AddressSanitizer: out of memory: allocator is trying to allocate 0xa0100000 bytes` (This is 2685403136 bytes or 2,5 GB).
-
-Default STACK_SIZE for Emscripten is 64 KBytes (65536 bytes).
-
-
-* nnue/layers/../simd.h:49:20: error: unknown type name '__m512i' Error
-
-WebAssembly does not support 512 bytes operations.<br>
-Read [Using SIMD with WebAssembly](https://emscripten.org/docs/porting/simd.html)<br>
-Compile adding -msimd128 for WebAssembly
-
-* wasm-ld: error: unable to find library -lgcov
-
-Emscripten uses Clang as its underlying C and C++ compiler. -lgcov is not supported by clang/llvm for code coverage.<br>
-Replace -lgcov with --coverage flag.
-
-
-* em++: warning: export name is not a valid JS symbol - Use `Module` or `wasmExports` to access this symbol [-Wjs-compiler]
-
-```sh
-em++ --clear-cache
-```
-
-
-#### Test Stockfish through the console
+#### Test C++ Stockfish through the console
 
 Download a compiled [relese of stockfish]('https://github.com/official-stockfish/Stockfish/releases/download/sf_18/stockfish-ubuntu-x86-64-vnni512.tar') for a specific architecture.
 
