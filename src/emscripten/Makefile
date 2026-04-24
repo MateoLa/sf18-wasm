@@ -27,10 +27,10 @@ LDFLAGS += -flto
 LDFLAGS += --pre-js emscripten/pre.js
 # LDFLAGS += --preload-file emscripten/pikafish.nnue@pikafish.nnue
 LDFLAGS += -s ENVIRONMENT=web,worker -s MODULARIZE=1 -s EXPORT_NAME="Stockfish"
-LDFLAGS += -s ALLOW_MEMORY_GROWTH=1 -s INITIAL_MEMORY=128MB -s MAXIMUM_MEMORY=4GB
+LDFLAGS += -s ALLOW_MEMORY_GROWTH=1 -s INITIAL_MEMORY=128MB -s MAXIMUM_MEMORY=2GB
 LDFLAGS += -s FILESYSTEM=1
-# LDFLAGS += -s "EXPORTED_RUNTIME_METHODS=['cwrap']"
-# LDFLAGS += -s EXPORTED_FUNCTIONS="['_main', '_wasm_uci_execute']"
+LDFLAGS += -s "EXPORTED_RUNTIME_METHODS=['cwrap']"
+LDFLAGS += -s EXPORTED_FUNCTIONS="['_main', '_wasm_uci_execute']"    # => To be available to be called.
 LDFLAGS += -s ALLOW_UNIMPLEMENTED_SYSCALLS
 
 
@@ -66,8 +66,7 @@ endif
 ifeq ($(debug),yes)
 	LDFLAGS += --emit-symbol-map
 	ifeq ($(COMP),emscripten)
-		LDFLAGS += -gsource-map=inline --source-map-base http://localhost:6931/ -fsanitize=undefined
-# 6931: emrun port
+		LDFLAGS += -gsource-map=inline --source-map-base http://localhost:6931/ -fsanitize=undefined,address
 	endif
 endif
 
@@ -87,3 +86,10 @@ endif
 clean: wasm-clean
 wasm-clean:
 	@rm -f $(EM_ARTIFACTS)
+
+
+# Source Mapping
+# g4 (deprecated) => -gsource-map
+# If the browser cannot find your source files, specify the location using --source-map-base [URL_OR_PATH].
+# 6931: emrun port
+# optionally: -gsource-map=inline

@@ -40,8 +40,88 @@ Compiling with the option `-fsanitize=undefined,address` the browser reports: `A
 
 Default STACK_SIZE for Emscripten is 64 KBytes (65536 bytes).
 
-To debbug this error I goning to use Emscripten Tracing tools. <br>
-To do this we can use Google Web Tracing Framwork or `git clone github.com/wayword`
+Firefox attempts to execute sf18.js:92 and the following sequence of function calls occurs until the error is reached:
+    ../src/engine.cpp:71:9
+    ../src/uci.cpp:68:5
+    ../src/main.cpp:49:51
+
+sf18.js:92 is the line who call `Module["read_stdout"] = Module["read_stdout"] || (output => console.log(output));`
+
+Unable to find a solution to this problem I will use Emscripten Tracing tools for debugging.<br>
+We going to use Google Web Tracing Framwork for Chrome.
+ 
+
+Other tracing option could be:
+```sh
+git clone https://github.com/waywardmonkeys/emscripten-trace-collector
+sudo apt update
+sudo apt install python2.7
+sudo apt-get install python-pip
+cd emscripten-trace-collector
+python2.7 -m pip install -r requirements.txt
+python2.7 run-server.py
+
+```
+
+Navigate to http://localhost:5000 <br>
+But this option is not very well manteined.
+
+
+#### Emscripten Tracing
+
+Set the `--tracing` option at the command line. It communicates results to an external data collection server. <br>
+
+Features: 
+  * Track custom contexts
+  * Allocation annotations to track mallocs
+  * Logging messages
+  * Tasks reporting
+  * Event loop reporting
+  * Google web tracing framework inter-operability
+
+```C++
+#include <emscripten/emscripten.h>
+#include <emscripten/bind.h>   // To export functions, values and objects.
+#include <emscripten/fetch.h>  // Allows native code to transfer files
+#include <emscripten/trace.h>
+```
+
+Configure the trace system into the C++ main loop `emscripten_trace_configure("http://127.0.0.1:5000", "STFISH")`. 
+
+Annotate some memory types to label some memory allocations to strings. Thus, you can pick them out in the UI later `emscripten_trace_annotate_address_type(font, "TTY_FONT")`.
+
+Record start and end loop events. Inside any function loop place: 
+```C++
+emscripten_trace_record_frame_start();
+emscripten_trace_record_frame_end();
+```
+
+Set contexts to track execute position or segment the program:
+```C++
+emscripten_trace_enter_context("Initializing Bitboard");
+emscripten_trace_exit_context();
+``` 
+
+Report memory layout and heap data periodically:
+```C++
+if(frames % 60 == 0) {
+    emscripten_trace_report_memory_layout();
+    emscripten_trace_report_off_heap_data();
+}
+```
+
+#### Stockfish Manual Trace
+
+```C++
+// main.cpp --> 
+std::cout << engine_info() // call to misc.cpp
+// wasm_uci_execute -->
+Bitboards.init();  // call to init_magics for ROOK & BISHOP
+
+
+
+```
+
 
 
 

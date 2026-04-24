@@ -13,7 +13,7 @@ Here we complile it for WebAssembly</p>
 ### Usage
 
 ```sh
-cd server
+# Into the root directory
 emrun sf.html --no_emrun_detect
 ```
 
@@ -53,9 +53,9 @@ Stockfish is written in C++ to maximize speed execution. The code has been optim
 Added or modified files:
 ```sh
 src/Makefile
-src/misc.cpp
 src/main.cpp
-src/emscripten # directory added
+src/misc.cpp
+src/emscripten  # directory
 ```
 
 In "src/Makefile" we consider a new architecture and compiler: "wasm" and "emscripten".

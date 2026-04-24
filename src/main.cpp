@@ -44,10 +44,9 @@ extern "C" void wasm_uci_execute(int argc, char* argv[]) {
     using namespace Stockfish;
 
     [[maybe_unused]] EM_STATIC auto __init_once = [&]() {
-
         Bitboards::init();
         Position::init();
-        
+
         auto uci = std::make_unique<UCIEngine>(argc, argv);
 
         Tune::init(uci->engine_options());

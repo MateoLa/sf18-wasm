@@ -78,7 +78,8 @@ EXTERN EMSCRIPTEN_KEEPALIVE void myFunction(int argc, char ** argv) {
 }
 ```
 
-By default, Emscripten-generated code always just calls the main() function, and other functions are eliminated as dead code. Putting EMSCRIPTEN_KEEPALIVE before a function name stops this from happening. You also need to import the emscripten.h library to use EMSCRIPTEN_KEEPALIVE.
+Emscripten remove any function that is not called from the compiled code. This can remove functions that you plan to call outside of the compiled code. There is no special logic to keep main() alive by default and it should be in the export list. <br> 
+EMSCRIPTEN_KEEPALIVE stops this from happening (import the emscripten.h library). It also exports the function, as if it were on EXPORTED_FUNCTIONS.
 
 * We are including the #ifdef blocks so that if you are trying to include this in C++ code, the example will still work. Due to C versus C++ name mangling rules, this would otherwise break, but here we are setting it so that it treats it as an external C function if you are using C++.
 
