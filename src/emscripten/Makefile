@@ -27,6 +27,7 @@ LDFLAGS += -flto
 LDFLAGS += --pre-js emscripten/pre.js
 # LDFLAGS += --preload-file emscripten/pikafish.nnue@pikafish.nnue
 LDFLAGS += -s ENVIRONMENT=web,worker -s MODULARIZE=1 -s EXPORT_NAME="Stockfish"
+LDFLAGS += -s STACK_SIZE=128KB
 LDFLAGS += -s ALLOW_MEMORY_GROWTH=1 -s INITIAL_MEMORY=128MB -s MAXIMUM_MEMORY=2GB
 LDFLAGS += -s FILESYSTEM=1
 LDFLAGS += -s "EXPORTED_RUNTIME_METHODS=['cwrap']"

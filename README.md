@@ -110,7 +110,7 @@ make ARCH=wasm clean
 
 #### Debbuging 
 
-When trying to compile our own version of Stockfish WebAssembly we face many errors which we summarize [here](/docs/debbuging.md).
+We face many errors trying to compile to WebAssembly. Learn [how to compile Stockfish](/docs/debbuging.md) here.
 
 
 #### Test C++ Stockfish through the console
