@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>sf18 Wasm</title>
+        <link rel="icon" type="image/x-icon" href="cpp_logo.png">
+        <script type="text/javascript">
+            const worker = new Worker('/sf18.worker.js', { type: 'module' });
+            worker.onerror = (event) => { console.log("MaLa worker error: ", event.message); };
+
+            window.addEventListener('DOMContentLoaded', (event) => {
+                const command = document.getElementById("command");
+                const output = document.getElementById("output");
+
+                function add_output(text) {
+                    output.value += text + "\n";
+                    output.scrollTop = output.scrollHeight;
+                }
+
+                command.addEventListener("keydown", function(event) {
+                    if (event.key === "Enter") {
+                        add_output("input> " + command.value);
+                        worker.postMessage(command.value);
+                        command.value = "";
+                    }
+                });
+
+                worker.onmessage = (e) => { add_output(e.data); };
+            });
+        </script>
+    </head>
+
+    <body>
+        <br>
+        <input type="text" id="command" size="50" placeholder="UCI command" />
+        <br>
+        <h4>Output</h4>
+        <textarea id="output" readonly rows="50" cols="120"> </textarea>
+    </body>    
+</html>

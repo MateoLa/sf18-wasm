@@ -41,7 +41,7 @@ Alternatively, you can produce a factory module, which allows you to produce mul
 * If your output file extension is .js and not .mjs, then you have to add the -sEXPORT_ES6 setting to output a JavaScript module.
 
 ```sh
-emcc -o hello.mjs hello.c -O3 -sMODULARIZE -sEXPORT_ES6
+emcc -o hello.mjs hello.c -O3 -s MODULARIZE=1 -s EXPORT_ES6=1
 ```
 
 Then in your code import the factory and call it:
@@ -53,6 +53,11 @@ createModule().then((Module) => {
   console.log("Wasm ready", Module);
 });
 ```
+
+The `-s EXPORT_ES6=1` flag makes the compiler to include a "default" export in the compiled JS, so you can use `import "somename" from "path-to-js"`
+
+The `-sEXPORT_NAME="Pepito"` has sence only if you compile the application as an ES6 module.
+
 
 ### Calling a custom function defined in C
 
@@ -110,6 +115,25 @@ document.getElementById("my-button").addEventListener("click", () => {
 });
 ```
 This illustrates how ccall() is used to call the exported function.
+
+
+#### Keep Runtime Alive
+
+`emscripten_exit_with_live_runtime()` Call this at the end of main() if you want to exit the main function cleanly without killing the underlying webassembly lifecycle. This implicitly handles the keepalive push.
+
+`emscripten_runtime_keepalive_push()` call in main() to increment the internal reference refcount and keep the runtime alive for async operantions or loops.
+
+`emscripten_runtime_keepalive_pop()` decrements one count from the active keepalive reference stack.
+
+
+#### Threads
+
+Emscripten cannot spawn new web workers dynamically from inside a running pthread if the thread pool is exhausted or uninitialized. Because browsers restrict synchronous worker creation and blocking operations on the main thread, Emscripten relies on a pre-allocated pool of Web Workers defined at startup.
+
+
+#### Numa
+
+WebAssembly and Emscripten do not support NUMA (Non-Uniform Memory Access) architectures or multiple distinct physical memory nodes, as WebAssembly operates on a single, uniform, sandboxed linear memory space.
 
 ### Note
 

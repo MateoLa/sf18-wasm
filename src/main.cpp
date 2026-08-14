@@ -26,42 +26,46 @@
 #include "uci.h"
 
 #ifdef __EMSCRIPTEN__
-    #include <emscripten.h>
+#include <emscripten.h>
 #endif
-
-#if defined(__EMSCRIPTEN__)
-    #define EM_STATIC static
-#else
-    #define EM_STATIC 
-#endif
-
 
 using namespace Stockfish;
 
 
-// Execute UCI::loop() only once.
-extern "C" void wasm_uci_execute(int argc, char* argv[]) {
-    using namespace Stockfish;
+#ifdef __EMSCRIPTEN__
+UCIEngine* uciP;
+#endif
 
-    [[maybe_unused]] EM_STATIC auto __init_once = [&]() {
-        Bitboards::init();
-        Position::init();
 
-        auto uci = std::make_unique<UCIEngine>(argc, argv);
-
-        Tune::init(uci->engine_options());
-
-        uci->loop();
-
-        return 0;
-    }();
-}
-
-// Argument Count & Argument Vector
 int main(int argc, char* argv[]) {
     std::cout << engine_info() << std::endl;
 
-    wasm_uci_execute(argc, argv);
+    Bitboards::init();
+    Position::init();
+
+#ifdef __EMSCRIPTEN__
+    uciP = new UCIEngine(argc, argv);
+
+    Tune::init(uciP->engine_options());
+
+    emscripten_exit_with_live_runtime();
+#else
+    auto uci = std::make_unique<UCIEngine>(argc, argv);
+
+    Tune::init(uci->engine_options());
+
+    uci->loop();
+#endif
 
     return 0;
 }
+
+
+#ifdef __EMSCRIPTEN__
+extern "C" void wasm_uci(char* str) {
+    std::string cmd(str);
+    uciP->uci_command(cmd);
+}
+#endif
+
+

@@ -24,13 +24,13 @@
     #include <features.h>
 #endif
 
-#if defined(__linux__) && !defined(__ANDROID__)
+#if defined(__linux__) && !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
     #include <sys/mman.h>
 #endif
 
 #if defined(__APPLE__) || defined(__ANDROID__) || defined(__OpenBSD__) \
   || (defined(__GLIBCXX__) && !defined(_GLIBCXX_HAVE_ALIGNED_ALLOC) && !defined(_WIN32)) \
-  || defined(__e2k__)
+  || defined(__e2k__) || defined(__EMSCRIPTEN__)
     #define POSIXALIGNEDALLOC
     #include <stdlib.h>
 #endif

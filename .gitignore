@@ -4,11 +4,14 @@
 **/*.out
 src/.depend
 
+server/sf18.data
+server/sf18.js.symbols
+server/sf18.wasm.map
+**/*.bkp
+
 # Built binary
 src/stockfish*
 src/-lstdc++.res
-**/*.wasm
-**/sf*
 
 # Neural network for the NNUE evaluation
 **/*.nnue
