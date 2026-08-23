@@ -17,7 +17,7 @@ CXXFLAGS += -flto -DUSE_POPCNT -pthread
 minify_js = no
 assertion = yes
 wasm_simd = yes
-debug = yes
+debug = no
 
 VPATH += :emscripten:../server
 

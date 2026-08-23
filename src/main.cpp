@@ -62,9 +62,12 @@ int main(int argc, char* argv[]) {
 
 
 #ifdef __EMSCRIPTEN__
-extern "C" void wasm_uci(char* str) {
-    std::string cmd(str);
-    uciP->uci_command(cmd);
+extern "C" {
+    EMSCRIPTEN_KEEPALIVE
+    void wasm_uci(char* str) {
+        std::string cmd(str);
+        uciP->uci_command(cmd);
+    }
 }
 #endif
 
