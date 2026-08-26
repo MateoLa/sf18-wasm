@@ -1,6 +1,7 @@
 import xx from "./sf18.js"
 
 let Module = {
+    printErr: (text) => { console.warn('MaLa C++ error: ', text); },
     print: (text) => { self.postMessage(text) },
     onRuntimeInitialized: () => {
         console.log("sf Module Loaded");

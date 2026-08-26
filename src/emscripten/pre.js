@@ -1,15 +1,26 @@
+
+/*
+When using pthreads (-pthread / -sUSE_PTHREADS=1), Emscripten ignores or overrides the wasmMemory option 
+which you are trying to set manually.
+You should do this throught compiling flags:
+  -sINITIAL_MEMORY=64mb \
+  -sALLOW_MEMORY_GROWTH=1 \
+  -sMAXIMUM_MEMORY=512mb
+
 // Provide a custom WebAssembly Memory object explicitly
 Module['wasmMemory'] = new WebAssembly.Memory({
     initial: 2048,      // In pages (1 page = 64KB). 2048 = 128MB 
     maximum: 32768,     // 2GB -> 2*(1024*1024*1024)/(64*1024) 
     shared: true        // Set to true if utilizing pthreads/threads
 });
+*/
 
-Module['printErr'] = function(text) { console.warn('MaLa C++ error: ', text); };
 
 Module["terminate"] = () => { PThread.terminateAllThreads(); };
 
 /*
+Module['printErr'] = function(text) { console.warn('MaLa C++ error: ', text); };
+
 Module['print'] = function(text) { postMessage(text); };
 
 Module['onmessage'] = function(e) {
@@ -17,7 +28,6 @@ Module['onmessage'] = function(e) {
     Module.cwrap('wasm_uci', null, ['string'], [e.data]); // Module._my_c_function()
 }
 */
-
 
 /*
 WebAssembly threads use the new Worker constructor to create new underlying threads.

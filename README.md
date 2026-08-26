@@ -129,6 +129,9 @@ LDFLAGS += --preload-file nn-37f18f62d772.nnue@nn-37f18f62d772.nnue
 
 In Makefile, the `--preload-file` flag package the files during compilation so they are available in the virtual cwd of the browser (static packaging). The C++ code can then immediately access the file at the path given in the flag using standard C file APIs.
 
+Emscripten generates a .data output file when you use the --preload-file compiler option to package assets. <br>
+This file acts as a virtual file system (MEMFS), allowing your C/C++ code to access static assets (like images, models, or config files) using standard C/C++ file I/O operations (e.g. fopen, std::ifstream).
+
 
 #### Pthreads
 
