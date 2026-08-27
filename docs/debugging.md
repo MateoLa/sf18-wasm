@@ -131,6 +131,21 @@ em++ --clear-cache
 auto uci = std::make_unique<UCIEngine>(0, nullptr);
 Stockfish cannot been initialized with arguments (argc, argv) = (0, nullptr).
 
+This error could also happens when you need to enlarge STACK_SIZE
+
+
+#### Wasm doesn't support data symbols in text sections (gEmbeddedNNUEBigData)
+
+This error occurs compiling network.cpp.
+
+WebAssembly's linker (wasm-ld) restricts placing data symbols inside code or text sections because the WebAssembly object format strictly separates code instructions from linear memory data segments. <br>
+Section Separation: WebAssembly splits code (the code section) and memory (the data section) at the architectural level.<br>
+Linker Behavior: Tools like wasm-ld expect data symbols to map to active data segments rather than executable or text segments. 
+
+Placing raw binary data via INCBIN into a text section causes symbol resolution failures or gets stripped during dead-strip optimization (--gc-sections).
+
+We avoid the INCBIN usage with `!defined(__EMSCRIPTEN__)` and embed the files with `--embed-file <filename>` 
+
 
 #### Threads error
 &
